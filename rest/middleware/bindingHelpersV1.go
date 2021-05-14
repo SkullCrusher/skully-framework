@@ -1,10 +1,10 @@
-package restMiddleware
+package middleware
 
 import (
+	"../helpers"
 	"github.com/gorilla/mux"
 	"net/http"
 )
-
 
 /*
 	bindRoute
@@ -35,7 +35,7 @@ func handleNoAuth(arg func(w http.ResponseWriter, r *http.Request, userId string
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		// Preprocess the request.
-		preProcess, namespaceHeader := preProcess(w, r)
+		preProcess, namespaceHeader := helpers.PreProcess(w, r)
 
 		// If we shouldn't continue.
 		if preProcess == false{
@@ -59,7 +59,7 @@ func handleAuth(arg func(w http.ResponseWriter, r *http.Request, userId string, 
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		// Preprocess the request.
-		preProcess, namespaceHeader := preProcess(w, r)
+		preProcess, namespaceHeader := helpers.PreProcess(w, r)
 
 		// If we shouldn't continue.
 		if preProcess == false {

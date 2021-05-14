@@ -1,4 +1,4 @@
-package middlewareLogic
+package logic
 
 import (
 	"golang.org/x/time/rate"

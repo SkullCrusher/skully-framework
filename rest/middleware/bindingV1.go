@@ -1,9 +1,13 @@
-package restMiddleware
+package middleware
 
 import (
+	"../../configuration"
+	"../helpers"
+	"fmt"
 	"github.com/gorilla/mux"
 	"net/http"
 )
+
 
 /*
 	BindNoAuthRoutes
@@ -49,5 +53,67 @@ func BindAuthRoute(r *mux.Router, route string, arg func(w http.ResponseWriter, 
 		bindRoute(r, route, handleAuth(arg, auth), methods)
 	}else{
 		bindRoute(r, route, LimitMiddleware(handleAuth(arg, auth), refillRate, defaultStock), methods)
+	}
+}
+
+
+/*
+	NoAuthRouteWrapper
+	Pre-handle a route that
+
+	@param {func(w http.ResponseWriter, r *http.Request)} arg - The route to handle the request.
+
+	@returns func(w http.ResponseWriter, r *http.Request)
+*/
+func NoAuthRouteWrapper(arg func(w http.ResponseWriter, r *http.Request)) func(w http.ResponseWriter, r *http.Request){
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		// Force the headers.
+		helpers.ForceHeaders(w)
+
+		// Block option requests from being processed.
+		if r.Method == "OPTIONS" {
+			_, _ = fmt.Fprintf(w, configuration.SuccessMessageFormat, "")
+			return
+		}
+
+		arg(w, r)
+	}
+}
+
+
+/*
+	AuthRouteWrapper
+	Force the authentication to happen first for this route.
+
+	@param {func} arg - The route to handle the request.
+	@param {func} authFunc - The function that validates the authentication request
+
+	@returns func(w http.ResponseWriter, r *http.Request)
+*/
+func AuthRouteWrapper(arg func(w http.ResponseWriter, r *http.Request, userId string), authFunc func(token string)(bool, string)) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		// Force the headers.
+		helpers.ForceHeaders(w)
+
+		// Block option requests from being processed.
+		if r.Method == "OPTIONS" {
+			_, _ = fmt.Fprintf(w, configuration.SuccessMessageFormat, "")
+			return
+		}
+
+		// Get the authorization header.
+		authenticationHeader := r.Header.Get("Authorization")
+
+		// Validate it.
+		validUser, userId := authFunc(authenticationHeader)
+
+		if validUser == false{
+			http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
+			return
+		}
+
+		arg(w, r, userId)
 	}
 }

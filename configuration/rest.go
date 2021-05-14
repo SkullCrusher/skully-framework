@@ -1,4 +1,4 @@
-package middleware
+package configuration
 
 var SuccessMessageFormat    = "{\"Success\": true,  \"Result\": \"%v\"}"
 var SuccessMessageRawFormat = "{\"Success\": true,  \"Result\": %v}"

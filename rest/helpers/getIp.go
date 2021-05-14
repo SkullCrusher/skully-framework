@@ -1,4 +1,4 @@
-package restMiddleware
+package helpers
 
 import "net/http"
 
@@ -25,3 +25,4 @@ func GetIP(r *http.Request) string {
 
 	return r.RemoteAddr
 }
+
